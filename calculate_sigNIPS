@@ -1,0 +1,39 @@
+function [inConsAtt] = calculate_sigNIPS(rS,attInd,m,objTag,dividTag,dividTagNum,D)
+%UNTITLED 此函数用来计算sigNIPS
+%S为对象集；attInd为指定的条件属性索引；m为对象集中的属性个数
+%   输入：rS为数据表；arrInd为指定的条件属性；m为属性个数；n为对象数量（也就是行数）
+%        objTag是对象序列化之后对应的索引排序；objTagNum是序列化对象的数量
+%        dividTag是对象分区情况，dividTag（i,1）是第i个分区起始位置（其中存放的索引是排序后的索引位置，需要使用objTag映射到rS中）
+%        dividTagNum是分区的数量,D是决策属性，也就是最后一列
+%   输出：inConsAtt是在属性attInd的作用下，各属性的sigNIP值。
+
+inConsAtt = zeros(1,m);%初始化为0，1行m列的零矩阵
+
+
+for j = 1:dividTagNum
+    for i = dividTag(j,1):dividTag(j,2)%只有分区中有大于一个对象才进入
+        startPos = i+1;
+        if startPos > dividTag(j,2)
+            break;
+        else
+            if rS(objTag(i),attInd) == rS(objTag(startPos),attInd)
+                if (D(objTag(i)) ~= D(objTag(startPos)))
+                    %unEqualFlag = 1;    %属于NIPRD
+                    for k = 1:m
+                        if k == attInd
+                            continue;
+                        end
+                        if rS(objTag(i),k) ~= rS(objTag(startPos),k)
+                            inConsAtt(k) = inConsAtt(k)+1;
+                        end
+                    end
+                end
+                %i = i+1;
+                if i > dividTag(j,2)
+                    break;
+                end
+            end
+        end
+    end
+end
+
